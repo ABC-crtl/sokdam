@@ -3,20 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Sokdam galaxy</title>
-  <script>
-    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-      const meta = document.createElement('meta');
-      meta.name = "viewport";
-      meta.content = "width=device-width, initial-scale=1.0, maximum-scale=2, minimum-scale=1.0, user-scalable=no";
-      document.head.appendChild(meta);
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = "viewport";
-      meta.content = "width=device-width, initial-scale=1.0";
-      document.head.appendChild(meta);
-    }
-  </script>
-  
   <style>
     body { margin: 0; background: black; overflow: hidden; }
     canvas { display: block; cursor: grab; background-color: transparent; }
@@ -28,14 +14,8 @@
       width: 100%;
       height: 100%;
       z-index: -2;
-      background: radial-gradient(ellipse at bottom, #fbfad5 -150%, #000000 100%);
-
-      /*background: radial-gradient(ellipse at center, #fbfad5b1 -10%, #fbfad564 20%, #fbfad559 30%, #000000 100%);*/
+      background: radial-gradient(ellipse at bottom, #d7dacc90 -150%, #000000 100%);
     }
-
-
-
-
 
     #tooltip {
       position: absolute;
@@ -62,14 +42,6 @@
       border: none;
       outline: none;
     }
-  @media (max-width: 600px) {
-    #search-input {
-      font-size: 18px;
-      padding: 10px 14px;
-      width: 60vw;
-    }
-  }
-
   </style>
 </head>
 <body>
@@ -79,7 +51,6 @@
 </div>
 <canvas id="galaxy"></canvas>
 <div id="tooltip"></div>
-<!--출처 링크 : https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?wrtSn=13333652&menuNo=200020-->
 <audio id="bg-music" src="background.mp3" preload="auto" loop></audio>
 <audio id="hover-sound" src="switch-1.mp3" preload="auto"></audio>
 
@@ -106,7 +77,6 @@ let lastMouseX = 0;
 let lastMouseY = 0;
 let mouseX = width / 2;
 let mouseY = height / 2;
-let lastTouchDist = null;
 
 window.addEventListener("resize", () => {
   width = window.innerWidth;
@@ -121,21 +91,12 @@ document.addEventListener("fullscreenchange", () => {
   if (document.fullscreenElement) window.dispatchEvent(new Event("resize"));
 });
 
-
-function enableMusic() {
-  const bg = document.getElementById("bg-music");
-  bg.volume = 0.5;
-  bg.play().then(() => {
-    console.log("🔊 음악 재생 성공");
-  }).catch((e) => {
-    console.warn("🚫 음악 재생 실패", e);
-  });
-}
-
-// 반드시 첫 사용자 터치 또는 클릭 시점에 실행
 document.addEventListener("DOMContentLoaded", () => {
-  document.body.addEventListener("click", enableMusic, { once: true });
-  document.body.addEventListener("touchstart", enableMusic, { once: true });
+  document.body.addEventListener("click", () => {
+    const bg = document.getElementById("bg-music");
+    bg.volume = 0.5;
+    bg.play().catch(() => {});
+  }, { once: true });
 });
 
 canvas.addEventListener("mousedown", (e) => {
@@ -155,26 +116,7 @@ canvas.addEventListener("mouseleave", () => {
   canvas.style.cursor = "grab";
 });
 
-canvas.addEventListener("mousemove", handleMouseMove);
-canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
-canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
-canvas.addEventListener("touchend", () => { isDragging = false; lastTouchDist = null; });
-
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const zoomFactor = 1.1;
-  const delta = e.deltaY < 0 ? zoomFactor : 1 / zoomFactor;
-  const mx = mouseX - width / 2 - offsetX;
-  const my = mouseY - height / 2 - offsetY;
-  const newScale = scale * delta;
-  if (newScale < 0.8 || newScale > 9) return;
-  offsetX -= mx * (delta - 1);
-  offsetY -= my * (delta - 1);
-  scale = newScale;
-  draw();
-}, { passive: false });
-
-function handleMouseMove(e) {
+canvas.addEventListener("mousemove", (e) => {
   mouseX = e.clientX;
   mouseY = e.clientY;
   if (isDragging) {
@@ -187,55 +129,25 @@ function handleMouseMove(e) {
     draw();
   }
   updateTooltip();
-}
+});
 
-function handleTouchStart(e) {
-  if (e.touches.length === 1) {
-    isDragging = true;
-    const touch = e.touches[0];
-    lastMouseX = touch.clientX;
-    lastMouseY = touch.clientY;
-    mouseX = touch.clientX;
-    mouseY = touch.clientY;
-    updateTooltip();
-  }
-}
-
-function handleTouchMove(e) {
-  if (e.touches.length === 1 && isDragging) {
-    const touch = e.touches[0];
-    const dx = touch.clientX - lastMouseX;
-    const dy = touch.clientY - lastMouseY;
-    offsetX += dx;
-    offsetY += dy;
-    lastMouseX = touch.clientX;
-    lastMouseY = touch.clientY;
-    draw();
-  } else if (e.touches.length === 2) {
-    const t1 = e.touches[0], t2 = e.touches[1];
-    const dx = t1.clientX - t2.clientX;
-    const dy = t1.clientY - t2.clientY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (lastTouchDist !== null) {
-      const delta = dist / lastTouchDist;
-      const newScale = scale * delta;
-      if (newScale >= 0.8 && newScale <= 9) {
-        const mx = (t1.clientX + t2.clientX) / 2 - width / 2 - offsetX;
-        const my = (t1.clientY + t2.clientY) / 2 - height / 2 - offsetY;
-        offsetX -= mx * (delta - 1);
-        offsetY -= my * (delta - 1);
-        scale = newScale;
-        draw();
-      }
-    }
-    lastTouchDist = dist;
-  }
-}
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const zoomFactor = 1.1;
+  const delta = e.deltaY < 0 ? zoomFactor : 1 / zoomFactor;
+  const mx = mouseX - width / 2 - offsetX;
+  const my = mouseY - height / 2 - offsetY;
+  const newScale = scale * delta;
+  if (newScale < 1 || newScale > 9) return;
+  offsetX -= mx * (delta - 1);
+  offsetY -= my * (delta - 1);
+  scale = newScale;
+  draw();
+}, { passive: false });
 
 function updateTooltip() {
   let found = null;
-  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  const fontSize = isMobile ? 16 : Math.min(26, Math.max(14, 16 + Math.sqrt(scale - 1) * 6));
+  const fontSize = Math.min(26, Math.max(14, 16 + Math.sqrt(scale - 1) * 6));
 
   for (const p of points) {
     const dx = mouseX - p.screenX;
@@ -243,7 +155,6 @@ function updateTooltip() {
     const dist = Math.sqrt(dx * dx + dy * dy);
     const baseRadius = highlightedTerm && p.text.includes(highlightedTerm) ? 4 : 2;
     const radius = Math.max(0.3, Math.min(baseRadius * scale, 50));
-
     if (dist < radius + 5) {
       found = p;
       break;
@@ -360,10 +271,9 @@ let stars = Array.from({ length: 300 }, () => ({
 function resizeBg() {
   bgCanvas.width = window.innerWidth * window.devicePixelRatio;
   bgCanvas.height = window.innerHeight * window.devicePixelRatio;
-  bgCtx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+  bgCtx.setTransform(1, 0, 0, 1, 0, 0);
   bgCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
-
 
 function animateStars() {
   bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
