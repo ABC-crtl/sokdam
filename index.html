@@ -2,8 +2,21 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>속담 갤럭시</title>
+  <title>Sokdam galaxy</title>
+  <script>
+    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      const meta = document.createElement('meta');
+      meta.name = "viewport";
+      meta.content = "width=device-width, initial-scale=1.0, maximum-scale=2, minimum-scale=1.0, user-scalable=no";
+      document.head.appendChild(meta);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = "viewport";
+      meta.content = "width=device-width, initial-scale=1.0";
+      document.head.appendChild(meta);
+    }
+  </script>
+  
   <style>
     body { margin: 0; background: black; overflow: hidden; }
     canvas { display: block; cursor: grab; background-color: transparent; }
@@ -15,8 +28,14 @@
       width: 100%;
       height: 100%;
       z-index: -2;
-      background: radial-gradient(ellipse at bottom, #000010 0%, #000000 100%);
+      background: radial-gradient(ellipse at bottom, #fbfad5 -150%, #000000 100%);
+
+      /*background: radial-gradient(ellipse at center, #fbfad5b1 -10%, #fbfad564 20%, #fbfad559 30%, #000000 100%);*/
     }
+
+
+
+
 
     #tooltip {
       position: absolute;
@@ -60,6 +79,7 @@
 </div>
 <canvas id="galaxy"></canvas>
 <div id="tooltip"></div>
+<!--출처 링크 : https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?wrtSn=13333652&menuNo=200020-->
 <audio id="bg-music" src="background.mp3" preload="auto" loop></audio>
 <audio id="hover-sound" src="switch-1.mp3" preload="auto"></audio>
 
